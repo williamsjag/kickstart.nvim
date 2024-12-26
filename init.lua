@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -166,6 +166,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -216,6 +218,21 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+-- <Space>st to open small terminal at the bottom of window
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.opt.number = false
+    vim.opt.relativenumber = false
+  end,
+})
+
+vim.keymap.set('n', '<leader>st', function()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'J'
+  vim.api.nvim_win_set_height(0, 15)
+end, { desc = '[S]mall [T]erminal beneath window' })
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -255,6 +272,85 @@ require('lazy').setup({
       },
     },
   },
+
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
+    config = function()
+      -- REQUIRED
+      local harpoon = require 'harpoon'
+      harpoon:setup()
+      -- REQUIRED
+
+      vim.keymap.set('n', '<leader>ha', function()
+        harpoon:list():add()
+      end, { desc = '[A]dd to harpoon list' })
+
+      vim.keymap.set('n', '<leader>ho', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end, { desc = '[O]pen harpoon list' })
+
+      vim.keymap.set('n', '<leader>h1', function()
+        harpoon:list():select(1)
+      end, { desc = 'Open [1]' })
+      vim.keymap.set('n', '<leader>h2', function()
+        harpoon:list():select(2)
+      end, { desc = 'Open [2]' })
+      vim.keymap.set('n', '<leader>h3', function()
+        harpoon:list():select(3)
+      end, { desc = 'Open [3]' })
+      vim.keymap.set('n', '<leader>h4', function()
+        harpoon:list():select(4)
+      end, { desc = 'Open [4]' })
+      vim.keymap.set('n', '<leader>h5', function()
+        harpoon:list():select(5)
+      end, { desc = 'Open [5]' })
+      vim.keymap.set('n', '<leader>h6', function()
+        harpoon:list():select(6)
+      end, { desc = 'Open [6]' })
+
+      -- Toggle previous & next buffers stored within Harpoon list
+      vim.keymap.set('n', '<C-S-P>', function()
+        harpoon:list():prev()
+      end)
+      vim.keymap.set('n', '<C-S-N>', function()
+        harpoon:list():next()
+      end)
+    end,
+  },
+  -- TELESCOPE version
+  --     local harpoon = require('harpoon')
+  --     harpoon:setup ({})
+  --
+  --     -- basic telescope configuration
+  --     local conf = require('telescope.config').values
+  --     local function toggle_telescope(harpoon_files)
+  --       local file_paths = {}
+  --       for _, item in ipairs(harpoon_files.items) do
+  --         table.insert(file_paths, item.value)
+  --       end
+  --
+  --       require('telescope.pickers')
+  --         .new({}, {
+  --           prompt_title = 'Harpoon',
+  --           finder = require('telescope.finders').new_table {
+  --             results = file_paths,
+  --           },
+  --           previewer = conf.file_previewer {},
+  --           sorter = conf.generic_sorter {},
+  --         })
+  --         :find()
+  --     end
+  --
+  --     vim.keymap.set('n', '<leader>ho', function()
+  --       toggle_telescope(harpoon:list())
+  --     end, { desc = '[O]pen [H]arpoon window' })
+  --     vim.keymap.set('n', '<leader>ha', function()
+  --       harpoon:list():add()
+  --     end, { desc = '[A]dd to [H]arpoon list' })
+  --   end,
+  -- },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -319,7 +415,8 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>h', group = '[H]arpoon' },
+        -- { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
   },
@@ -588,14 +685,14 @@ require('lazy').setup({
       })
 
       -- Change diagnostic symbols in the sign column (gutter)
-      -- if vim.g.have_nerd_font then
-      --   local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
-      --   local diagnostic_signs = {}
-      --   for type, icon in pairs(signs) do
-      --     diagnostic_signs[vim.diagnostic.severity[type]] = icon
-      --   end
-      --   vim.diagnostic.config { signs = { text = diagnostic_signs } }
-      -- end
+      if vim.g.have_nerd_font then
+        local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
+        local diagnostic_signs = {}
+        for type, icon in pairs(signs) do
+          diagnostic_signs[vim.diagnostic.severity[type]] = icon
+        end
+        vim.diagnostic.config { signs = { text = diagnostic_signs } }
+      end
 
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
@@ -637,7 +734,7 @@ require('lazy').setup({
                 callSnippet = 'Replace',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
@@ -709,10 +806,10 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -929,8 +1026,8 @@ require('lazy').setup({
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
