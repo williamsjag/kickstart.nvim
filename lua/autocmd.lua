@@ -74,4 +74,9 @@ vim.api.nvim_create_autocmd('BufEnter', {
   end,
 })
 
+-- Load random theme on lauch
+local color = require 'color'
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = color.set_random_theme, -- Call the set_random_theme function from the color module
+})
 -- vim: ts=2 sts=2 sw=2 et
