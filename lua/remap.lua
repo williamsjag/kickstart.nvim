@@ -8,6 +8,8 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 
+-- Select all
+vim.keymap.set('n', '<leader>va', 'gg<S-v>G')
 -- Paste without overwriting register
 vim.keymap.set({ 'n', 'v' }, '<leader>e', '', { desc = '[E]dit' })
 vim.keymap.set('v', '<leader>ep', '"_dP', { desc = '[P]aste without copy' })
@@ -18,8 +20,8 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
 
 -- Move highlighted text with arrow keys
-vim.keymap.set('v', '<S-Down>', ":m '>+1<CR>gv=gv")
-vim.keymap.set('v', '<S-Up>', ":m '<-2<CR>gv=gv")
+vim.keymap.set('v', '<S-C-Down>', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', '<S-C-Up>', ":m '<-2<CR>gv=gv")
 vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier

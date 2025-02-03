@@ -1,4 +1,4 @@
-local themes = { 'tokyonight', 'ashen', 'citruszest', 'kanagawa', 'onedark', 'rose-pine', 'tundra' }
+local themes = { 'tokyonight', 'citruszest', 'kanagawa', 'onedark', 'rose-pine', 'tundra' }
 -- Function to set a random theme
 local function set_random_theme()
   math.randomseed(os.time()) -- Seed the random number generator
@@ -58,6 +58,8 @@ local function setup_theme_keybinds()
     vim.keymap.set('n', key, function()
       local success, err = pcall(function()
         vim.cmd('colorscheme ' .. theme)
+        vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
       end)
       if success then
         print('Colorscheme set to: ' .. theme)
